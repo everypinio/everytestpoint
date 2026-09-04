@@ -1,0 +1,20 @@
+{
+  "$schema": "https://go.kicad.org/api/schemas/v1",
+  "identifier": "com.everypin.every-test-point",
+  "name": "Every Test Point",
+  "description": "Generate realistic top/bottom PCB renders and an interactive test-point map",
+  "runtime": {
+    "type": "python",
+    "min_version": "3.9"
+  },
+  "actions": [
+    {
+      "identifier": "generate-test-point-map",
+      "name": "Generate test-point map",
+      "description": "Export test points, realistic board renders, and an interactive HTML report",
+      "show-button": true,
+      "scopes": ["pcb"],
+      "entrypoint": "generate_report.py"
+    }
+  ]
+}
