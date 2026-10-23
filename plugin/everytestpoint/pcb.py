@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .sexpr import child, children, root_forms
+from .sexpr import SExprError, child, children, root_forms
 
 _TP_REFERENCE = re.compile(r"^TP(?:\d+|[_-].+|$)", re.IGNORECASE)
 _GROUND = re.compile(r"(^|[/_+.-])(GND|AGND|DGND|PGND)([/_+.-]|$)", re.IGNORECASE)
@@ -64,6 +65,7 @@ class TestPoint:
 class BoardData:
     name: str
     source: str
+    revision: str
     bounds: Bounds
     aux_origin: tuple[float, float] | None
     testpoints: tuple[TestPoint, ...]
@@ -77,6 +79,7 @@ class BoardData:
         return {
             "name": self.name,
             "source": self.source,
+            "revision": self.revision,
             "bounds": self.bounds.to_dict(),
             "aux_origin": list(self.aux_origin) if self.aux_origin else None,
             "testpoints": [point.to_dict() for point in self.testpoints],
@@ -248,18 +251,55 @@ def _aux_origin(setup: list | None) -> tuple[float, float] | None:
     return (_number(item[1]), _number(item[2])) if item and len(item) >= 3 else None
 
 
+def _title_block_revision(title_block: list | None) -> str:
+    item = child(title_block, "rev") if title_block else None
+    return str(item[1]).strip() if item and len(item) >= 2 else ""
+
+
+def _schematic_revision(path: Path) -> str:
+    if not path.is_file():
+        return ""
+    try:
+        source = path.read_text(encoding="utf-8")
+        title_block = next(root_forms(source, {"title_block"}, root_name="kicad_sch"), None)
+    except (OSError, SExprError):
+        return ""
+    return _title_block_revision(title_block)
+
+
+def _project_revision(board_path: Path, pcb_revision: str) -> str:
+    project_path = board_path.with_suffix(".kicad_pro")
+    if project_path.is_file():
+        try:
+            project = json.loads(project_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            project = {}
+        variables = project.get("text_variables", {}) if isinstance(project, dict) else {}
+        if isinstance(variables, dict):
+            normalized = {str(key).casefold(): str(value).strip() for key, value in variables.items()}
+            for key in ("revision", "rev", "pcb_revision", "sch_revision"):
+                if value := normalized.get(key):
+                    return re.sub(r"^rev(?:ision)?[.\s:]*", "", value, flags=re.IGNORECASE) or value
+    if pcb_revision:
+        return pcb_revision
+    return _schematic_revision(board_path.with_suffix(".kicad_sch"))
+
+
 def extract_board(path: str | Path) -> BoardData:
     board_path = Path(path)
     source = board_path.read_text(encoding="utf-8")
-    keep = {"setup", "net", "footprint", "gr_line", "gr_arc", "gr_rect", "gr_circle", "gr_poly", "gr_curve"}
+    keep = {"setup", "title_block", "net", "footprint", "gr_line", "gr_arc", "gr_rect", "gr_circle", "gr_poly", "gr_curve"}
 
     setup: list | None = None
+    title_block: list | None = None
     footprints: list[list] = []
     edge_points: list[tuple[float, float]] = []
     net_names: set[str] = set()
     for form in root_forms(source, keep):
         if form[0] == "setup":
             setup = form
+        elif form[0] == "title_block":
+            title_block = form
         elif form[0] == "footprint":
             footprints.append(form)
         elif form[0] == "net" and len(form) > 1:
@@ -351,6 +391,7 @@ def extract_board(path: str | Path) -> BoardData:
     return BoardData(
         name=board_path.stem,
         source=str(board_path.resolve()),
+        revision=_project_revision(board_path, _title_block_revision(title_block)),
         bounds=bounds,
         aux_origin=_aux_origin(setup),
         testpoints=tuple(points),

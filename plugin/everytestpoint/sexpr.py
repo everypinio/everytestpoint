@@ -105,12 +105,12 @@ def _skip_after_open(stream: TokenStream) -> None:
             depth -= 1
 
 
-def root_forms(source: str, keep: set[str]) -> Iterator[list]:
-    """Yield selected direct children of the root `(kicad_pcb ...)` form."""
+def root_forms(source: str, keep: set[str], root_name: str = "kicad_pcb") -> Iterator[list]:
+    """Yield selected direct children of a KiCad root S-expression."""
 
     stream = TokenStream(tokenize(source))
-    if stream.pop() != "(" or stream.pop() != "kicad_pcb":
-        raise SExprError("expected a kicad_pcb root form")
+    if stream.pop() != "(" or stream.pop() != root_name:
+        raise SExprError(f"expected a {root_name} root form")
 
     while True:
         token = stream.pop()

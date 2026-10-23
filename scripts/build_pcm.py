@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.0"
+VERSION = "0.2.3"
 
 
 def main() -> int:
@@ -19,6 +19,9 @@ def main() -> int:
         stage = Path(temporary)
         plugins = stage / "plugins"
         shutil.copytree(ROOT / "plugin", plugins)
+        resources = stage / "resources"
+        resources.mkdir()
+        shutil.copy2(ROOT / "pcm" / "icon.png", resources / "icon.png")
         metadata = json.loads((ROOT / "pcm" / "metadata.json").read_text(encoding="utf-8"))
         (stage / "metadata.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"

@@ -8,10 +8,22 @@ One click in PCB Editor creates `<board-name>-testpoints/` next to the board wit
 - `index.html` — searchable top/bottom board map and test-point table;
 - `testpoints.csv` and `testpoints.json` — complete structured exports;
 - `jigsapp-testpoints.csv` — TheJigsApp-compatible probe table;
+- `dft-distances.csv` — every same-side probe pair, sorted by center distance;
 - `images/top.png` and `images/bottom.png` — realistic KiCad 3D renders.
 
 The extractor accepts both KiCad's pad fabrication property `Test point pad` and conventional
 single-pad `TP…` footprints. Through-hole probes are shown on both sides.
+
+The report header uses the Everypin wordmark and records the project revision plus the report
+generation date and time. Revision is read from the KiCad project text variable `REVISION`, with
+PCB and main-schematic title blocks used as fallbacks.
+
+All report typography uses the bundled Golos Text variable font. Its SIL Open Font License is
+included at `plugin/everytestpoint/GolosText-OFL.txt`.
+
+The **DFT spacing** tab shows the board and a complete pairwise spacing table for each fixture
+side. Select a standard pogo-pin pitch or enter a custom minimum; every pair below the threshold
+is highlighted in red on the board and in the table.
 
 ## Install for development
 
@@ -48,7 +60,7 @@ Remove `--no-render` to use `kicad-cli pcb render`.
 python scripts\build_pcm.py
 ```
 
-The archive is written to `dist/every-test-point-0.1.0.zip` with the KiCad 10 PCM layout.
+The archive is written to `dist/every-test-point-0.2.3.zip` with the KiCad 10 PCM layout.
 
 ## Test
 

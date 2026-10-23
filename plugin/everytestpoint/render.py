@@ -97,8 +97,22 @@ def measure_board_geometry(path: Path, bounds: Bounds) -> RenderGeometry:
     if not row_boxes or not column_boxes:
         raise RuntimeError(f"Could not locate the board surface in {path}")
 
-    board_width = Counter(right - left for left, right in row_boxes).most_common(1)[0][0]
-    board_height = Counter(bottom - top for top, bottom in column_boxes).most_common(1)[0][0]
+    # A connector or another 3D model can overhang the board across most of one
+    # axis.  In that case the most common opaque column/row span belongs to the
+    # model, not to the board (for example a wide connector above the top edge).
+    # Select the width/height pair whose pixel-per-millimetre scales agree.
+    width_candidates = Counter(right - left for left, right in row_boxes).most_common(16)
+    height_candidates = Counter(bottom - top for top, bottom in column_boxes).most_common(16)
+    candidate_pairs = []
+    for board_width, width_support in width_candidates:
+        for board_height, height_support in height_candidates:
+            x_scale = board_width / bounds.width
+            y_scale = board_height / bounds.height
+            mismatch = abs(x_scale - y_scale) / max(x_scale, y_scale)
+            candidate_pairs.append(
+                (mismatch, -(width_support + height_support), board_width, board_height)
+            )
+    mismatch, _, board_width, board_height = min(candidate_pairs)
     width_rows = [box for box in row_boxes if box[1] - box[0] == board_width]
     height_columns = [box for box in column_boxes if box[1] - box[0] == board_height]
     board_left = round(median(left for left, _ in width_rows))
@@ -106,7 +120,7 @@ def measure_board_geometry(path: Path, bounds: Bounds) -> RenderGeometry:
 
     x_scale = board_width / bounds.width
     y_scale = board_height / bounds.height
-    if abs(x_scale - y_scale) / max(x_scale, y_scale) > 0.02:
+    if mismatch > 0.02:
         raise RuntimeError(
             f"Board render calibration is inconsistent: {x_scale:.3f} vs {y_scale:.3f} px/mm"
         )
@@ -155,6 +169,7 @@ def render_board(
             "high",
             "--preset",
             "follow_plot_settings",
+            "--use-board-stackup-colors",
             str(board_path),
         ]
         completed = subprocess.run(

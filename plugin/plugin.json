@@ -2,7 +2,7 @@
   "$schema": "https://go.kicad.org/api/schemas/v1",
   "identifier": "com.everypin.every-test-point",
   "name": "Every Test Point",
-  "description": "Generate realistic top/bottom PCB renders and an interactive test-point map",
+  "description": "Generate realistic board maps, test-point exports, and DFT probe-spacing checks",
   "runtime": {
     "type": "python",
     "min_version": "3.9"
@@ -11,8 +11,16 @@
     {
       "identifier": "generate-test-point-map",
       "name": "Generate test-point map",
-      "description": "Export test points, realistic board renders, and an interactive HTML report",
+      "description": "Export test points, realistic board renders, and an interactive DFT report",
       "show-button": true,
+      "icons-light": [
+        "icons/everypin-mark-24.png",
+        "icons/everypin-mark-48.png"
+      ],
+      "icons-dark": [
+        "icons/everypin-mark-24.png",
+        "icons/everypin-mark-48.png"
+      ],
       "scopes": ["pcb"],
       "entrypoint": "generate_report.py"
     }

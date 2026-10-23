@@ -39,11 +39,15 @@ class ExtractBoardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "fixture.kicad_pcb"
             path.write_text(BOARD, encoding="utf-8")
+            path.with_suffix(".kicad_sch").write_text(
+                '(kicad_sch (title_block (rev "1.7")))', encoding="utf-8"
+            )
             board = extract_board(path)
 
         self.assertEqual((board.bounds.min_x, board.bounds.min_y), (10.0, 20.0))
         self.assertEqual((board.bounds.max_x, board.bounds.max_y), (50.0, 50.0))
         self.assertEqual(board.aux_origin, (10.0, 20.0))
+        self.assertEqual(board.revision, "1.7")
         self.assertEqual(len(board.testpoints), 3)
         self.assertEqual(board.total_nets, 2)
         self.assertEqual(board.covered_nets, 2)
