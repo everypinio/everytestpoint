@@ -1,5 +1,8 @@
 # Every Test Point
 
+[![CI](https://github.com/everypinio/everytestpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/everypinio/everytestpoint/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Every Test Point is a KiCad 10 IPC plugin that turns the open PCB into a self-contained,
 interactive test-point report.
 
@@ -12,7 +15,9 @@ One click in PCB Editor creates `<board-name>-testpoints/` next to the board wit
 - `images/top.png` and `images/bottom.png` — realistic KiCad 3D renders.
 
 The extractor accepts both KiCad's pad fabrication property `Test point pad` and conventional
-single-pad `TP…` footprints. Through-hole probes are shown on both sides.
+single-pad `TP…` footprints. A through-hole pad on a fitted component is available to probes only
+from the side opposite the component. Mark an unpopulated through-hole footprint as **DNP** in
+KiCad to make its pads available from both sides.
 
 The report header uses the Everypin wordmark and records the project revision plus the report
 generation date and time. Revision is read from the KiCad project text variable `REVISION`, with
@@ -24,6 +29,25 @@ included at `plugin/everytestpoint/GolosText-OFL.txt`.
 The **DFT spacing** tab shows the board and a complete pairwise spacing table for each fixture
 side. Select a standard pogo-pin pitch or enter a custom minimum; every pair below the threshold
 is highlighted in red on the board and in the table.
+
+## Install
+
+KiCad 10 is required. Enable **Preferences → Plugins → Enable KiCad API** before using the
+plugin.
+
+Until Every Test Point is accepted into the official KiCad repository:
+
+1. Download `every-test-point-<version>.zip` from the
+   [latest GitHub release](https://github.com/everypinio/everytestpoint/releases/latest).
+2. In KiCad, open **Plugin and Content Manager → Install from File** and select the ZIP.
+3. Restart PCB Editor if the toolbar action does not appear immediately. KiCad may need a short
+   time to create the plugin's Python environment and install its dependencies.
+
+Once published in the official repository, it can be installed by searching for
+**Every Test Point** in Plugin and Content Manager.
+
+Early development builds used a different internal identifier. If KiCad shows both variants,
+remove `com.everypin.every-test-point` once before installing the current package.
 
 ## Install for development
 
@@ -60,13 +84,26 @@ Remove `--no-render` to use `kicad-cli pcb render`.
 python scripts\build_pcm.py
 ```
 
-The archive is written to `dist/every-test-point-0.2.3.zip` with the KiCad 10 PCM layout.
+The archive is written to `dist/every-test-point-<version>.zip` with the KiCad 10 PCM layout.
+The build is reproducible: identical sources produce an identical ZIP and SHA-256 hash.
+
+Validate the manifests and archive against the KiCad schemas:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python scripts\validate_release.py
+```
 
 ## Test
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+CI runs the tests and package validation on Windows, macOS, and Linux. A tag matching
+`v<plugin/VERSION>` creates a GitHub release automatically, including the PCM ZIP, checksum, and
+official-repository metadata. Maintainer instructions are in
+[`docs/RELEASING.md`](docs/RELEASING.md).
 
 ## Design notes
 

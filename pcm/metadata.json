@@ -3,28 +3,30 @@
   "name": "Every Test Point",
   "description": "Interactive test-point map with realistic renders and DFT probe-spacing checks",
   "description_full": "Extracts test-point pads from the open PCB, exports CSV and JSON, creates realistic KiCad 3D renders of both board sides, and builds a searchable HTML report with pairwise DFT pogo-pin spacing checks.",
-  "identifier": "com.everypin.every-test-point",
+  "identifier": "com.github.everypinio.everytestpoint",
   "type": "plugin",
   "author": {
     "name": "EveryPin",
     "contact": {
-      "web": "https://github.com/everypin/everytestpoint"
+      "web": "https://github.com/everypinio/everytestpoint"
     }
   },
   "maintainer": {
     "name": "EveryPin",
     "contact": {
-      "web": "https://github.com/everypin/everytestpoint"
+      "web": "https://github.com/everypinio/everytestpoint"
     }
   },
   "license": "MIT",
   "resources": {
-    "homepage": "https://github.com/everypin/everytestpoint"
+    "homepage": "https://github.com/everypinio/everytestpoint",
+    "repository": "https://github.com/everypinio/everytestpoint",
+    "issues": "https://github.com/everypinio/everytestpoint/issues"
   },
   "versions": [
     {
-      "version": "0.2.3",
-      "status": "development",
+      "version": "0.2.4",
+      "status": "testing",
       "kicad_version": "10.0",
       "runtime": "ipc"
     }

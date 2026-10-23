@@ -33,6 +33,36 @@ BOARD = r'''(kicad_pcb
   )
 )'''
 
+THROUGH_HOLE_BOARD = r'''(kicad_pcb
+  (version 20260101)
+  (generator pcbnew)
+  (gr_rect (start 0 0) (end 20 20) (stroke (width 0.05) (type default)) (fill none) (layer "Edge.Cuts"))
+  (footprint "Connector:Header"
+    (layer "F.Cu")
+    (at 5 5)
+    (property "Reference" "J1")
+    (property "Value" "FITTED_TOP")
+    (attr through_hole)
+    (pad "1" thru_hole circle (at 0 0) (size 1 1) (drill 0.5) (layers "*.Cu" "*.Mask") (net 1 "TOP_COMPONENT") (property pad_prop_testpoint))
+  )
+  (footprint "Connector:Header"
+    (layer "B.Cu")
+    (at 10 5)
+    (property "Reference" "J2")
+    (property "Value" "FITTED_BOTTOM")
+    (attr through_hole)
+    (pad "1" thru_hole circle (at 0 0) (size 1 1) (drill 0.5) (layers "*.Cu" "*.Mask") (net 2 "BOTTOM_COMPONENT") (property pad_prop_testpoint))
+  )
+  (footprint "Connector:Header"
+    (layer "F.Cu")
+    (at 15 5)
+    (property "Reference" "J3")
+    (property "Value" "NOT_FITTED")
+    (attr through_hole dnp)
+    (pad "1" thru_hole circle (at 0 0) (size 1 1) (drill 0.5) (layers "*.Cu" "*.Mask") (net 3 "EMPTY_HOLE") (property pad_prop_testpoint))
+  )
+)'''
+
 
 class ExtractBoardTests(unittest.TestCase):
     def test_extracts_conventional_and_fabrication_property_points(self):
@@ -58,8 +88,23 @@ class ExtractBoardTests(unittest.TestCase):
         self.assertEqual(by_id["J1.1"].side, "bottom")
         self.assertAlmostEqual(by_id["J1.1"].absolute_x_mm, 40.0)
         self.assertAlmostEqual(by_id["J1.1"].absolute_y_mm, 38.0)
-        self.assertEqual(by_id["J1.2"].side, "both")
+        self.assertEqual(by_id["J1.2"].side, "top")
+        self.assertEqual(by_id["J1.2"].pad_type, "THRU")
         self.assertEqual(by_id["J1.2"].category, "Ground")
+
+    def test_through_hole_access_depends_on_mounting_side_and_dnp(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fixture.kicad_pcb"
+            path.write_text(THROUGH_HOLE_BOARD, encoding="utf-8")
+            board = extract_board(path)
+
+        by_id = {point.id: point for point in board.testpoints}
+        self.assertEqual(by_id["J1.1"].side, "bottom")
+        self.assertEqual(by_id["J1.1"].footprint_side, "top")
+        self.assertEqual(by_id["J2.1"].side, "top")
+        self.assertEqual(by_id["J2.1"].footprint_side, "bottom")
+        self.assertEqual(by_id["J3.1"].side, "both")
+        self.assertEqual(by_id["J3.1"].pad_type, "THRU")
 
 
 if __name__ == "__main__":

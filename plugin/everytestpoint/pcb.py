@@ -120,6 +120,19 @@ def _pad_layers(pad: list) -> tuple[str, ...]:
     return tuple(str(value) for value in item[1:]) if item else ()
 
 
+def _footprint_attributes(footprint: list) -> frozenset[str]:
+    item = child(footprint, "attr")
+    return frozenset(str(value).casefold() for value in item[1:]) if item else frozenset()
+
+
+def _is_through_hole(pad: list) -> bool:
+    layers = _pad_layers(pad)
+    pad_kind = str(pad[2]) if len(pad) > 2 else ""
+    return pad_kind in {"thru_hole", "np_thru_hole"} or "*.Cu" in layers or (
+        "F.Cu" in layers and "B.Cu" in layers
+    )
+
+
 def _absolute_pad_position(footprint: list, pad: list) -> tuple[float, float]:
     fx, fy, angle = _at(footprint)
     px, py, _ = _at(pad)
@@ -138,11 +151,13 @@ def _side(footprint: list, pad: list) -> tuple[str, str]:
     fp_layer = child(footprint, "layer")
     footprint_side = "bottom" if fp_layer and len(fp_layer) > 1 and fp_layer[1] == "B.Cu" else "top"
     layers = _pad_layers(pad)
-    pad_kind = str(pad[2]) if len(pad) > 2 else ""
-    if pad_kind in {"thru_hole", "np_thru_hole"} or "*.Cu" in layers or (
-        "F.Cu" in layers and "B.Cu" in layers
-    ):
-        return "both", footprint_side
+    if _is_through_hole(pad):
+        # A fitted through-hole component blocks access from its body side.
+        # KiCad's DNP attribute explicitly means that no component is fitted,
+        # leaving the plated hole accessible to probes from either side.
+        if "dnp" in _footprint_attributes(footprint):
+            return "both", footprint_side
+        return ("top" if footprint_side == "bottom" else "bottom"), footprint_side
     if "B.Cu" in layers:
         return "bottom", footprint_side
     if "F.Cu" in layers:
@@ -335,6 +350,7 @@ def extract_board(path: str | Path) -> BoardData:
             pad_number = str(pad[1]) if len(pad) > 1 else ""
             absolute_x, absolute_y = _absolute_pad_position(footprint, pad)
             side, footprint_side = _side(footprint, pad)
+            is_through_hole = _is_through_hole(pad)
             net = _net(pad)
             reason = "fabrication_property" if _has_testpoint_property(pad) else "testpoint_footprint"
             raw_points.append(
@@ -347,7 +363,7 @@ def extract_board(path: str | Path) -> BoardData:
                     "side": side,
                     "footprint_side": footprint_side,
                     "net": net,
-                    "pad_type": "THRU" if side == "both" else "SMT",
+                    "pad_type": "THRU" if is_through_hole else "SMT",
                     "reason": reason,
                     "ordinal": ordinal,
                     "selected_count": len(selected),

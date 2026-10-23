@@ -32,7 +32,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(payload["stats"]["testpoints"], 3)
             self.assertEqual(payload["revision"], "2.4")
             self.assertRegex(payload["generated_at"], r"^\d{4}-\d{2}-\d{2}T")
-            self.assertEqual(len(payload["dft_pairs"]), 2)
+            self.assertEqual(len(payload["dft_pairs"]), 1)
             html = result.index_path.read_text(encoding="utf-8")
             self.assertIn('class="brand-logo"', html)
             self.assertIn('aria-label="Everypin"', html)

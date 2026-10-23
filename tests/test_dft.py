@@ -19,12 +19,7 @@ class DftTests(unittest.TestCase):
         by_points = {frozenset((pair.point_a, pair.point_b)): pair for pair in pairs}
         self.assertNotIn(frozenset(("TP1", "J1.1")), by_points)
         self.assertEqual(by_points[frozenset(("TP1", "J1.2"))].sides, ("top",))
-        self.assertEqual(by_points[frozenset(("J1.1", "J1.2"))].sides, ("bottom",))
-        self.assertAlmostEqual(
-            by_points[frozenset(("J1.1", "J1.2"))].distance_mm,
-            2.8284,
-            places=4,
-        )
+        self.assertNotIn(frozenset(("J1.1", "J1.2")), by_points)
 
 
 if __name__ == "__main__":

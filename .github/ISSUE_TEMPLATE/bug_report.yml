@@ -1,0 +1,62 @@
+name: Bug report
+description: Report a problem with installation or report generation
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Every Test Point. Do not attach confidential board files publicly.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: 0.2.3
+    validations:
+      required: true
+  - type: input
+    id: kicad-version
+    attributes:
+      label: KiCad version
+      placeholder: 10.0.1
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include the expected result and the actual result.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the PCB in KiCad
+        2. Click Generate test-point map
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: KiCad warnings or logs
+      description: Paste the PCB Editor warning message or relevant API log excerpt.
+      render: shell
+  - type: checkboxes
+    id: api
+    attributes:
+      label: KiCad API
+      options:
+        - label: Preferences → Plugins → Enable KiCad API is enabled
+          required: true

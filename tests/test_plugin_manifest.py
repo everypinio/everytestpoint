@@ -17,6 +17,20 @@ def png_size(path: Path) -> tuple[int, int]:
 
 
 class PluginManifestTests(unittest.TestCase):
+    def test_pcm_and_plugin_identity_are_release_consistent(self):
+        manifest = json.loads((ROOT / "plugin" / "plugin.json").read_text(encoding="utf-8"))
+        metadata = json.loads((ROOT / "pcm" / "metadata.json").read_text(encoding="utf-8"))
+        version = (ROOT / "plugin" / "VERSION").read_text(encoding="utf-8").strip()
+
+        expected_identifier = "com.github.everypinio.everytestpoint"
+        self.assertEqual(manifest["identifier"], expected_identifier)
+        self.assertEqual(metadata["identifier"], expected_identifier)
+        self.assertEqual(metadata["versions"][0]["version"], version)
+        self.assertEqual(metadata["versions"][0]["runtime"], "ipc")
+        self.assertEqual(manifest["runtime"]["min_version"], "3.10")
+
+        self.assertEqual(png_size(ROOT / "pcm" / "icon.png"), (64, 64))
+
     def test_toolbar_action_has_icons_for_both_themes(self):
         manifest = json.loads((ROOT / "plugin" / "plugin.json").read_text(encoding="utf-8"))
         action = manifest["actions"][0]
