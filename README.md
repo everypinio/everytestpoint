@@ -30,6 +30,16 @@ The **DFT spacing** tab shows the board and a complete pairwise spacing table fo
 side. Select a standard pogo-pin pitch or enter a custom minimum; every pair below the threshold
 is highlighted in red on the board and in the table.
 
+## Report preview
+
+Test-point map with realistic top and bottom board renders:
+
+![Every Test Point report showing the board maps and probe markers](docs/images/test-point-report.png)
+
+DFT spacing analysis with pogo-pin pitch conflicts highlighted in red:
+
+![DFT spacing report with highlighted probe conflicts](docs/images/dft-spacing-report.png)
+
 ## Install
 
 KiCad 10 is required. Enable **Preferences → Plugins → Enable KiCad API** before using the

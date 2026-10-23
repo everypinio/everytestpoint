@@ -59,7 +59,14 @@ def load_schema(filename: str, url: str) -> dict[str, Any]:
     for candidate in schema_candidates(filename):
         if candidate.is_file():
             return load_json(candidate)
-    with urllib.request.urlopen(url, timeout=20) as response:  # noqa: S310 - fixed KiCad URL
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json, application/schema+json",
+            "User-Agent": "EveryTestPoint-release-validator/1.0",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=20) as response:  # noqa: S310 - fixed KiCad URL
         return json.load(response)
 
 

@@ -21,6 +21,7 @@ All notable changes to this project are documented here. The format follows
 - DFT spacing view with selectable pogo-pin pitch and highlighted violations.
 - Everypin branding, light and dark logos, Golos Text, revision, and report timestamp.
 - KiCad 10 IPC toolbar action and PCM installation package.
+- README previews and a reproducible headless-browser screenshot helper.
 
 [Unreleased]: https://github.com/everypinio/everytestpoint/compare/v0.2.4...HEAD
 [0.2.4]: https://github.com/everypinio/everytestpoint/releases/tag/v0.2.4
